@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  playwright:
+    build:
+      context: .
+      dockerfile: Dockerfile.playwright
+    image: custom-playwright:1.56
+    container_name: playwright
+    restart: unless-stopped
+    shm_size: "2gb"
+    ports:
+      - "4000:4000"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  changedetection:
+    image: dgtlmoon/changedetection.io
+    container_name: changedetectionio
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      USE_PLAYWRIGHT: "true"
+      PLAYWRIGHT_DRIVER_URL: "ws://playwright:4000"
+      LISTEN_HOST: "0.0.0.0"
+      LOG_LEVEL: "debug"
+    volumes:
+      - datastore-volume:/datastore
+    depends_on:
+      - playwright
+
+volumes:
+  datastore-volume:

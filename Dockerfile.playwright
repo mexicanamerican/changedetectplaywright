@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/playwright:v1.56.0-noble
+
+# We create a dummy project so that "playwright install" actually
+# installs browser binaries into node_modules where the CLI expects them.
+WORKDIR /app
+
+# Create a package.json so npm installs work properly.
+RUN echo "{}" > package.json
+
+# Install the pinned Playwright CLI (matching your changedetection version).
+RUN npm install playwright@1.56.0
+
+# Install the browser binaries into the project context.
+RUN npx playwright@1.56.0 install --with-deps
+
+# Expose the Playwright WebSocket port
+EXPOSE 4000
+
+# Start the Playwright WebSocket server
+CMD ["bash", "-lc", "npx playwright@1.56.0 run-server --host 0.0.0.0 --port 4000"]
